@@ -1,0 +1,31 @@
+.app-shell {
+	max-width: 860px;
+}
+
+.tagify {
+	--tags-border-color: #ced4da;
+	--tags-hover-border-color: #86b7fe;
+	--tags-focus-border-color: #86b7fe;
+	--tag-bg: #e9ecef;
+	--tag-hover: #dee2e6;
+	--tag-text-color: #212529;
+}
+
+.badge.rank-1 { background-color: #0d6efd; color: #fff; }
+.badge.rank-2 { background-color: #198754; color: #fff; }
+.badge.rank-3 { background-color: #20c997; color: #fff; }
+.badge.rank-4 { background-color: #0dcaf0; color: #212529; }
+.badge.rank-5 { background-color: #6f42c1; color: #fff; }
+.badge.rank-6 { background-color: #6610f2; color: #fff; }
+.badge.rank-7 { background-color: #d63384; color: #fff; }
+.badge.rank-8 { background-color: #fd7e14; color: #212529; }
+.badge.rank-9 { background-color: #ffc107; color: #212529; }
+.badge.rank-10 { background-color: #dc3545; color: #fff; }
+.badge.rank-11 { background-color: #6c757d; color: #fff; }
+.badge.rank-12 { background-color: #212529; color: #fff; }
+
+@media (max-width: 576px) {
+	.card-body {
+		padding: 1rem;
+	}
+}

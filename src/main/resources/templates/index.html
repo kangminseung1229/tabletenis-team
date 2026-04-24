@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>탁구 팀짜기</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/css/team.css}">
+</head>
+<body class="bg-light">
+<main class="container py-4 py-md-5">
+	<section class="mx-auto app-shell card shadow-sm border-0">
+		<div class="card-body p-3 p-md-4">
+			<h1 class="h3 mb-3">탁구 팀짜기</h1>
+
+			<form class="row g-3" method="post" th:action="@{/teams}">
+				<div class="col-12">
+					<label for="selectedNames" class="form-label fw-semibold">참여 인원</label>
+					<input id="selectedNames" name="selectedNames" class="form-control" th:value="${selectedNames}">
+					<div class="form-text">화이트리스트 인원만 선택 가능합니다.</div>
+				</div>
+				<div class="col-12 col-md-4">
+					<label for="groupCount" class="form-label fw-semibold">조 개수</label>
+					<input id="groupCount" name="groupCount" type="number" min="1" class="form-control" th:value="${groupCount}">
+				</div>
+				<div class="col-12">
+					<button type="submit" class="btn btn-primary">팀 구성하기</button>
+				</div>
+			</form>
+
+			<div th:if="${errorMessage}" class="alert alert-danger mt-3 mb-0" th:text="${errorMessage}"></div>
+		</div>
+	</section>
+
+	<section class="mt-4" th:if="${groups}">
+		<div class="row g-3">
+			<div class="col-12 col-lg-6" th:each="group : ${groups}">
+				<article class="card h-100 border-0 shadow-sm">
+					<div class="card-body">
+						<div class="d-flex justify-content-between align-items-center mb-3">
+							<h2 class="h5 mb-0" th:text="'조 ' + ${group.groupNumber}">조 1</h2>
+							<span class="badge text-bg-secondary" th:text="'평균 ' + ${#numbers.formatDecimal(group.averageRank, 1, 1)} + '부'"></span>
+						</div>
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item d-flex justify-content-between align-items-center px-0"
+								th:each="player : ${group.players}">
+								<span th:text="${player.name}">이름</span>
+								<span class="badge"
+									  th:classappend="' rank-' + ${player.rank}"
+									  th:text="${player.rank} + '부'">8부</span>
+							</li>
+						</ul>
+					</div>
+				</article>
+			</div>
+		</div>
+	</section>
+
+	<section class="mt-4 card border-0 shadow-sm">
+		<div class="card-body p-3">
+			<h2 class="h6 mb-2">골드스핀 선수목록</h2>
+			<div class="d-flex flex-wrap gap-2">
+				<span class="badge"
+					  th:each="player : ${whitelistPlayers}"
+					  th:classappend="' rank-' + ${player.rank}"
+					  th:text="${player.name} + ' (' + ${player.rank} + '부)'">강민승 (8부)</span>
+			</div>
+		</div>
+	</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script th:inline="javascript">
+	const whitelist = /*[[${whitelistNames}]]*/ [];
+	const input = document.querySelector("#selectedNames");
+	new Tagify(input, {
+		whitelist,
+		enforceWhitelist: true,
+		dropdown: {
+			enabled: 0,
+			maxItems: 20
+		}
+	});
+</script>
+</body>
+</html>
