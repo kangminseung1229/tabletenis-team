@@ -42,6 +42,20 @@ class TeamPageControllerTest {
 		assertNotNull(model.getAttribute("groups"));
 	}
 
+	@Test
+	void renderPrintPage_returnsPrintViewWithPlayers() {
+		TeamPageController controller = new TeamPageController(
+			new StubRepository(List.of(new Player("강민승", 8), new Player("김민준", 3))),
+			new TeamBalancerService()
+		);
+		Model model = new ExtendedModelMap();
+
+		String view = controller.renderPrintPage("강민승,김민준", model);
+
+		assertEquals("print-a4", view);
+		assertNotNull(model.getAttribute("printPlayers"));
+	}
+
 	private static final class StubRepository extends PlayerWhitelistRepository {
 		private final List<Player> players;
 

@@ -21,6 +21,9 @@ import java.util.regex.Pattern;
 @Slf4j
 public class TeamPageController {
 	private static final String INDEX_VIEW = "index";
+	private static final String PRINT_VIEW = "print-a4";
+	private static final String ERROR_MESSAGE_ATTRIBUTE = "errorMessage";
+	private static final String WHITELIST_ERROR_MESSAGE = "화이트리스트에 없는 인원이 포함되어 있습니다.";
 	private static final Pattern TAGIFY_VALUE_PATTERN = Pattern.compile("\"value\"\\s*:\\s*\"([^\"]+)\"");
 	private static final String DEFAULT_SELECTED_NAMES = String.join(",",
 			"지청일",
@@ -64,23 +67,46 @@ public class TeamPageController {
 			Model model) {
 		addBaseModelAttributes(model, selectedNames == null ? "" : selectedNames, groupCount);
 
-		List<String> requestedNames = parseSelectedNames(selectedNames);
-		List<Player> selectedPlayers = whitelistRepository.findByNames(requestedNames);
-		if (selectedPlayers.size() != requestedNames.stream().distinct().count()) {
-			log.error("화이트리스트에 없는 인원이 포함되어 있습니다. requestedNames: {}, selectedPlayers: {}", requestedNames,
-					selectedPlayers);
-			model.addAttribute("errorMessage", "화이트리스트에 없는 인원이 포함되어 있습니다.");
-
+		SelectedPlayersResult selectedPlayersResult = resolveSelectedPlayers(selectedNames);
+		if (selectedPlayersResult.hasUnknownPlayers()) {
+			model.addAttribute(ERROR_MESSAGE_ATTRIBUTE, WHITELIST_ERROR_MESSAGE);
 			return INDEX_VIEW;
 		}
 
 		try {
-			List<TeamGroup> groups = teamBalancerService.createBalancedTeams(selectedPlayers, groupCount);
+			List<TeamGroup> groups = teamBalancerService.createBalancedTeams(selectedPlayersResult.players(), groupCount);
 			model.addAttribute("groups", groups);
 		} catch (IllegalArgumentException e) {
-			model.addAttribute("errorMessage", e.getMessage());
+			model.addAttribute(ERROR_MESSAGE_ATTRIBUTE, e.getMessage());
 		}
 		return INDEX_VIEW;
+	}
+
+	@PostMapping("/print")
+	public String renderPrintPage(
+			@RequestParam(name = "selectedNames", required = false) String selectedNames,
+			Model model) {
+		addBaseModelAttributes(model, selectedNames == null ? "" : selectedNames, 2);
+
+		SelectedPlayersResult selectedPlayersResult = resolveSelectedPlayers(selectedNames);
+		if (selectedPlayersResult.hasUnknownPlayers()) {
+			model.addAttribute(ERROR_MESSAGE_ATTRIBUTE, WHITELIST_ERROR_MESSAGE);
+			return INDEX_VIEW;
+		}
+
+		model.addAttribute("printPlayers", selectedPlayersResult.players());
+		return PRINT_VIEW;
+	}
+
+	private SelectedPlayersResult resolveSelectedPlayers(String selectedNames) {
+		List<String> requestedNames = parseSelectedNames(selectedNames);
+		List<Player> selectedPlayers = whitelistRepository.findByNames(requestedNames);
+		boolean hasUnknownPlayers = selectedPlayers.size() != requestedNames.stream().distinct().count();
+		if (hasUnknownPlayers) {
+			log.error("화이트리스트에 없는 인원이 포함되어 있습니다. requestedNames: {}, selectedPlayers: {}", requestedNames,
+					selectedPlayers);
+		}
+		return new SelectedPlayersResult(selectedPlayers, hasUnknownPlayers);
 	}
 
 	private void addBaseModelAttributes(Model model, String selectedNames, int groupCount) {
@@ -110,5 +136,8 @@ public class TeamPageController {
 				.map(String::trim)
 				.filter(name -> !name.isEmpty())
 				.toList();
+	}
+
+	private record SelectedPlayersResult(List<Player> players, boolean hasUnknownPlayers) {
 	}
 }

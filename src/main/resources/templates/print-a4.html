@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>A4 출력표</title>
+	<style>
+		@page {
+			size: A4 portrait;
+			margin: 8mm;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			font-family: "Malgun Gothic", sans-serif;
+			color: #111;
+		}
+
+		.page {
+			width: 194mm;
+			height: 281mm;
+			margin: 0 auto;
+			display: flex;
+			flex-direction: column;
+			gap: 4mm;
+		}
+
+		.ticket-grid {
+			flex: 1;
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			grid-template-rows: repeat(8, 1fr);
+			border: 1px solid #222;
+		}
+
+		.ticket-cell {
+			border-right: 1px dashed #777;
+			border-bottom: 1px dashed #777;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 2mm;
+			text-align: center;
+			font-size: 18px;
+			font-weight: 700;
+			word-break: keep-all;
+		}
+
+		.ticket-cell:nth-child(4n) {
+			border-right: 0;
+		}
+
+		.ticket-cell:nth-child(n + 29) {
+			border-bottom: 0;
+		}
+
+		.actions {
+			display: flex;
+			gap: 8px;
+		}
+
+		button, a {
+			padding: 8px 12px;
+			font-size: 14px;
+			text-decoration: none;
+			border: 1px solid #444;
+			background: #fff;
+			color: #111;
+			cursor: pointer;
+		}
+
+		@media print {
+			.actions {
+				display: none;
+			}
+		}
+	</style>
+</head>
+<body>
+<main class="page">
+	<section class="ticket-grid">
+		<div class="ticket-cell" th:each="index : ${#numbers.sequence(0, 31)}">
+			<span th:if="${index < #lists.size(printPlayers)}"
+				  th:text="${printPlayers[index].name}">이름</span>
+		</div>
+	</section>
+
+	<div class="actions">
+		<button type="button" onclick="window.print()">인쇄</button>
+		<a href="/">돌아가기</a>
+	</div>
+</main>
+</body>
+</html>
