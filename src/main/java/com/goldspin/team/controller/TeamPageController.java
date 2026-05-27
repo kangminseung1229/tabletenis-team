@@ -27,17 +27,7 @@ public class TeamPageController {
 	private static final String WHITELIST_ERROR_MESSAGE = "화이트리스트에 없는 인원이 포함되어 있습니다.";
 	private static final Pattern TAGIFY_VALUE_PATTERN = Pattern.compile("\"value\"\\s*:\\s*\"([^\"]+)\"");
 	private static final String DEFAULT_SELECTED_NAMES = String.join(",",
-			"신만용", "엄기성",
-			"최성운", "정원준",
-			"강민승", "김은숙",
-			"홍지용", "신선숙",
-			"전성호", "함소희",
-			"박종백", "이미경",
-			"송영신",
-			"황태규", "임금옥",
-			"이승학", "이희진",
-			"지해준", "안영희",
-			"고성기", "이영주", "이동혁");
+			"강민승");
 
 	private final PlayerWhitelistRepository whitelistRepository;
 	private final TeamBalancerService teamBalancerService;

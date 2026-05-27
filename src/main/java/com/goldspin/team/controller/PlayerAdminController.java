@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.goldspin.team.repository.PlayerWhitelistRepository;
 import com.goldspin.team.service.PlayerWhitelistService;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
 @RequestMapping("/admin/players")
+@RequiredArgsConstructor
 public class PlayerAdminController {
 
 	private static final String ADMIN_VIEW = "admin-players";
@@ -20,13 +23,6 @@ public class PlayerAdminController {
 
 	private final PlayerWhitelistRepository repository;
 	private final PlayerWhitelistService whitelistService;
-
-	public PlayerAdminController(
-			PlayerWhitelistRepository repository,
-			PlayerWhitelistService whitelistService) {
-		this.repository = repository;
-		this.whitelistService = whitelistService;
-	}
 
 	@GetMapping
 	public String list(Model model) {

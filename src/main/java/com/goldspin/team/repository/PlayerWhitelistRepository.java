@@ -1,8 +1,10 @@
 package com.goldspin.team.repository;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,38 +21,7 @@ import jakarta.annotation.PostConstruct;
 @Repository
 public class PlayerWhitelistRepository {
 
-	static final List<Player> DEFAULT_PLAYERS = List.of(
-			new Player("김두심", 9),
-			new Player("노경인", 8),
-			new Player("지청일", 8),
-			new Player("김재균", 6),
-			new Player("전성호", 6),
-			new Player("박종백", 6),
-			new Player("김광덕", 9),
-			new Player("임웅성", 6),
-			new Player("이영주", 8),
-			new Player("송영신", 12),
-			new Player("이홍구", 6),
-			new Player("권정택", 9),
-			new Player("홍지용", 6),
-			new Player("신선숙", 9),
-			new Player("정원준", 8),
-			new Player("이승학", 6),
-			new Player("임금옥", 12),
-			new Player("신만용", 7),
-			new Player("강민승", 8),
-			new Player("안성민", 7),
-			new Player("최성운", 8),
-			new Player("안영희", 11),
-			new Player("엄기성", 8),
-			new Player("김은숙", 9),
-			new Player("황태규", 7),
-			new Player("함소희", 11),
-			new Player("이희진", 10),
-			new Player("이동혁", 6),
-			new Player("고성기", 7),
-			new Player("이미경", 10),
-			new Player("지해준", 8));
+	private static final String DEFAULT_PLAYERS_CSV = "players.csv";
 
 	private final Path storagePath;
 	private final ConcurrentMap<String, Player> players = new ConcurrentHashMap<>();
@@ -80,6 +51,12 @@ public class PlayerWhitelistRepository {
 	static PlayerWhitelistRepository loadPersistedStorage(Path storagePath) throws IOException {
 		PlayerWhitelistRepository repository = new PlayerWhitelistRepository(storagePath, true);
 		repository.reloadFromStorage();
+		return repository;
+	}
+
+	static PlayerWhitelistRepository createWithStorage(Path storagePath) throws IOException {
+		PlayerWhitelistRepository repository = new PlayerWhitelistRepository(storagePath, true);
+		repository.loadOrSeed();
 		return repository;
 	}
 
@@ -161,16 +138,24 @@ public class PlayerWhitelistRepository {
 	}
 
 	private void loadOrSeed() throws IOException {
-		if (Files.exists(storagePath)) {
-			loadFromFile();
-			return;
+		if (!Files.exists(storagePath)) {
+			copyDefaultCsvToStorage();
 		}
-		replaceAll(DEFAULT_PLAYERS);
-		persist();
+		loadFromPath(storagePath);
 	}
 
-	private void loadFromFile() throws IOException {
-		List<Player> loaded = Files.readAllLines(storagePath).stream()
+	private void copyDefaultCsvToStorage() throws IOException {
+		try (InputStream input = getClass().getClassLoader().getResourceAsStream(DEFAULT_PLAYERS_CSV)) {
+			if (input == null) {
+				throw new IllegalStateException("기본 선수 목록을 찾을 수 없습니다: classpath:" + DEFAULT_PLAYERS_CSV);
+			}
+			Files.createDirectories(storagePath.getParent());
+			Files.copy(input, storagePath, StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+
+	private void loadFromPath(Path path) throws IOException {
+		List<Player> loaded = Files.readAllLines(path).stream()
 				.map(String::trim)
 				.filter(line -> !line.isEmpty() && !line.startsWith("#"))
 				.map(this::parseLine)
@@ -188,7 +173,7 @@ public class PlayerWhitelistRepository {
 
 	void reloadFromStorage() throws IOException {
 		if (Files.exists(storagePath)) {
-			loadFromFile();
+			loadFromPath(storagePath);
 		}
 	}
 

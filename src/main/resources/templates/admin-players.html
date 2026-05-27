@@ -46,6 +46,7 @@
 								<th style="width: 5rem;"></th>
 							</tr>
 						</thead>
+						<h1>총 인원: <span th:text="${players.size()}"></span></h1>
 						<tbody>
 							<tr th:each="player : ${players}">
 								<td colspan="3" class="p-1">

@@ -36,6 +36,15 @@ class PlayerWhitelistRepositoryTest {
 	}
 
 	@Test
+	void loadOrSeed_copiesDefaultCsvWhenStorageMissing() throws Exception {
+		var storagePath = tempDir.resolve("players.csv");
+		var repository = PlayerWhitelistRepository.createWithStorage(storagePath);
+
+		assertEquals(31, repository.findAll().size());
+		assertEquals(8, repository.findByName("강민승").rank());
+	}
+
+	@Test
 	void insert_throwsWhenNameAlreadyExists() {
 		var repository = PlayerWhitelistRepository.forTest(List.of(new Player("강민승", 8)));
 		assertThrows(IllegalArgumentException.class, () -> repository.insert(new Player("강민승", 3)));
