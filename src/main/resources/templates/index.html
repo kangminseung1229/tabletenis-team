@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,81 +9,164 @@
 	<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet">
 	<link rel="stylesheet" th:href="@{/css/team.css}">
 </head>
+
 <body class="bg-light">
-<main class="container py-4 py-md-5">
-	<section class="mx-auto app-shell card shadow-sm border-0">
-		<div class="card-body p-3 p-md-4">
-			<h1 class="h3 mb-3">탁구 팀짜기</h1>
-
-			<form class="row g-3" method="post" th:action="@{/teams}">
-				<div class="col-12">
-					<label for="selectedNames" class="form-label fw-semibold">참여 인원</label>
-					<input id="selectedNames" name="selectedNames" class="form-control" th:value="${selectedNames}">
-					<div class="form-text">화이트리스트 인원만 선택 가능합니다.</div>
+	<main class="container py-4 py-md-5">
+		<section class="mx-auto app-shell card shadow-sm border-0">
+			<div class="card-body p-3 p-md-4">
+				<div class="d-flex justify-content-between align-items-start mb-3">
+					<h1 class="h3 mb-0">탁구 팀짜기</h1>
+					<a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/players}">선수 관리</a>
 				</div>
-				<div class="col-12 col-md-4">
-					<label for="groupCount" class="form-label fw-semibold">조 개수</label>
-					<input id="groupCount" name="groupCount" type="number" min="1" class="form-control" th:value="${groupCount}">
-				</div>
-				<div class="col-12">
-					<button type="submit" class="btn btn-primary">팀 구성하기</button>
-					<button type="submit" class="btn btn-outline-secondary ms-2" formaction="/print">A4 출력표 보기</button>
-				</div>
-			</form>
 
-			<div th:if="${errorMessage}" class="alert alert-danger mt-3 mb-0" th:text="${errorMessage}"></div>
-		</div>
-	</section>
-
-	<section class="mt-4" th:if="${groups}">
-		<div class="row g-3">
-			<div class="col-12 col-lg-6" th:each="group : ${groups}">
-				<article class="card h-100 border-0 shadow-sm">
-					<div class="card-body">
-						<div class="d-flex justify-content-between align-items-center mb-3">
-							<h2 class="h5 mb-0" th:text="'조 ' + ${group.groupNumber}">조 1</h2>
-							<span class="badge text-bg-secondary" th:text="'평균 ' + ${#numbers.formatDecimal(group.averageRank, 1, 1)} + '부'"></span>
-						</div>
-						<ul class="list-group list-group-flush">
-							<li class="list-group-item d-flex justify-content-between align-items-center px-0"
-								th:each="player : ${group.players}">
-								<span th:text="${player.name}">이름</span>
-								<span class="badge"
-									  th:classappend="' rank-' + ${player.rank}"
-									  th:text="${player.rank} + '부'">8부</span>
-							</li>
-						</ul>
+				<form class="row g-3" method="post" th:action="@{/teams}">
+					<div class="col-12">
+						<label for="selectedNames" class="form-label fw-semibold">참여 인원</label>
+						<span id="count"> 15 </span>
+							<input id="selectedNames" name="selectedNames" class="form-control tag"
+								th:value="${selectedNames}">
+							<div class="form-text">화이트리스트 인원만 선택 가능합니다.</div>
 					</div>
-				</article>
-			</div>
-		</div>
-	</section>
+					<div class="col-12 col-md-4">
+						<label for="groupCount" class="form-label fw-semibold">조 개수</label>
+						<input id="groupCount" name="groupCount" type="number" min="1" class="form-control"
+							th:value="${groupCount}">
+					</div>
+					<div class="col-12">
+						<button type="submit" class="btn btn-primary">단식</button>
+						<button type="button" id="partner" class="btn btn-primary">복식</button>
+						<button type="submit" class="btn btn-outline-secondary ms-2" formaction="/print">A4 출력표
+							보기</button>
+					</div>
+				</form>
 
-	<section class="mt-4 card border-0 shadow-sm">
-		<div class="card-body p-3">
-			<h2 class="h6 mb-2">골드스핀 선수목록</h2>
-			<div class="d-flex flex-wrap gap-2">
-				<span class="badge"
-					  th:each="player : ${whitelistPlayers}"
-					  th:classappend="' rank-' + ${player.rank}"
-					  th:text="${player.name} + ' (' + ${player.rank} + '부)'">강민승 (8부)</span>
+				<div th:if="${errorMessage}" class="alert alert-danger mt-3 mb-0" th:text="${errorMessage}"></div>
 			</div>
-		</div>
-	</section>
-</main>
+		</section>
 
-<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
-<script th:inline="javascript">
-	const whitelist = /*[[${whitelistNames}]]*/ [];
-	const input = document.querySelector("#selectedNames");
-	new Tagify(input, {
-		whitelist,
-		enforceWhitelist: true,
-		dropdown: {
-			enabled: 0,
-			maxItems: 20
+		<section class="mt-4" th:if="${groups}">
+			<div class="row g-3">
+				<div class="col-12 col-lg-6" th:each="group : ${groups}">
+					<article class="card h-100 border-0 shadow-sm">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center mb-3">
+								<h2 class="h5 mb-0" th:text="'조 ' + ${group.groupNumber}">조 1</h2>
+								<span class="badge text-bg-secondary"
+									th:text="'평균 ' + ${#numbers.formatDecimal(group.averageRank, 1, 1)} + '부'"></span>
+							</div>
+							<ul class="list-group list-group-flush">
+								<li class="list-group-item d-flex justify-content-between align-items-center px-0"
+									th:each="player : ${group.players}">
+									<span th:text="${player.name}">이름</span>
+									<span class="badge" th:classappend="' rank-' + ${player.rank}"
+										th:text="${player.rank} + '부'">8부</span>
+								</li>
+							</ul>
+						</div>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<section class="mt-4" th:if="${partners}">
+			<div class="row g-3">
+				<div class="col-12 col-lg-6" th:each="partner : ${partners}">
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item d-flex justify-content-between align-items-center px-0">
+							<span th:text="${partner.first.name}">이름</span>
+							<span th:text="${partner.second.name}">이름</span>
+							<span class="badge" th:classappend="' rank-' + ${partner.first.rank}"
+								th:text="${partner.first.rank + partner.second.rank} + '부'">8부</span>
+						</li>
+					</ul>
+				</div>
+
+
+			</div>
+
+		</section>
+
+		<section class="mt-4 card border-0 shadow-sm">
+			<div class="card-body p-3">
+				<h2 class="h6 mb-2">골드스핀 선수목록</h2>
+				<div class="d-flex flex-wrap gap-2">
+					<span class="badge" th:each="player : ${whitelistPlayers}"
+						th:classappend="' rank-' + ${player.rank}"
+						th:text="${player.name} + ' (' + ${player.rank} + '부)'">강민승 (8부)</span>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+	<script th:inline="javascript">
+		const whitelist = /*[[${whitelistNames}]]*/[];
+		const input = document.querySelector("#selectedNames");
+		var tagify = new Tagify(input, {
+			whitelist,
+			enforceWhitelist: false,
+			dropdown: {
+				enabled: 0,
+				maxItems: 20
+			}
+		});
+
+		$('#partner').on('click', function () {
+
+			if ($("tags").find("tag").length % 2 != 0) {
+				alert("복식 인원은 짝수여야 합니다.");
+				return;
+			}
+
+			// 클릭한 요소에서 필요한 ID 값 가져오기
+			const partnerId = $(this).data('partnerId');
+
+			// 3. form 객체 생성 및 설정
+			const form = document.createElement('form');
+
+			// 🚨 중요: 폼이 전송될 최종 목적지 (서버의 API 엔드포인트)
+			form.action = '/partners';
+			// 🚨 중요: 폼 전송 방식 (GET 또는 POST)
+			form.method = 'POST';
+
+			// 4. 숨겨진 입력 필드 (Hidden Input) 생성 및 값 할당
+			const hiddenInput = document.createElement('input');
+			hiddenInput.type = 'hidden'; // 사용자에게 보이지 않도록 설정
+			hiddenInput.name = 'selectedNames'; // 서버에서 이 이름으로 값을 받음
+			hiddenInput.value = $("#selectedNames").val();
+
+			// 5. 요소들을 폼에 추가
+			form.appendChild(hiddenInput);
+
+			// 6. 폼을 DOM (문서 객체 모델)에 추가
+			document.body.appendChild(form);
+
+			// 7. 폼 전송 실행 (이 코드가 실제로 페이지 이동이나 AJAX 요청을 유발함)
+			form.submit();
+
+
+		});
+
+
+
+		function countTags() {
+			$("#count").text(tagify.value.length);
 		}
-	});
-</script>
+
+		countTags();
+		tagify.on('add', function (e) {
+			countTags();
+			console.log('add');
+
+		});
+
+		tagify.on('remove', function (e) {
+			countTags();
+			console.log('remove');
+		});
+
+	</script>
 </body>
+
 </html>

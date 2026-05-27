@@ -17,7 +17,7 @@ class TeamPageControllerTest {
 	@Test
 	void buildTeams_returnsErrorWhenWhitelistValidationFails() {
 		TeamPageController controller = new TeamPageController(
-			new StubRepository(List.of(new Player("강민승", 8))),
+			PlayerWhitelistRepository.forTest(List.of(new Player("강민승", 8))),
 			new TeamBalancerService()
 		);
 		Model model = new ExtendedModelMap();
@@ -31,7 +31,7 @@ class TeamPageControllerTest {
 	@Test
 	void buildTeams_returnsGroupsWhenValidInput() {
 		TeamPageController controller = new TeamPageController(
-			new StubRepository(List.of(new Player("강민승", 8), new Player("김민준", 3))),
+			PlayerWhitelistRepository.forTest(List.of(new Player("강민승", 8), new Player("김민준", 3))),
 			new TeamBalancerService()
 		);
 		Model model = new ExtendedModelMap();
@@ -45,7 +45,7 @@ class TeamPageControllerTest {
 	@Test
 	void renderPrintPage_returnsPrintViewWithPlayers() {
 		TeamPageController controller = new TeamPageController(
-			new StubRepository(List.of(new Player("강민승", 8), new Player("김민준", 3))),
+			PlayerWhitelistRepository.forTest(List.of(new Player("강민승", 8), new Player("김민준", 3))),
 			new TeamBalancerService()
 		);
 		Model model = new ExtendedModelMap();
@@ -56,26 +56,4 @@ class TeamPageControllerTest {
 		assertNotNull(model.getAttribute("printPlayers"));
 	}
 
-	private static final class StubRepository extends PlayerWhitelistRepository {
-		private final List<Player> players;
-
-		private StubRepository(List<Player> players) {
-			this.players = players;
-		}
-
-		@Override
-		public List<Player> findAll() {
-			return players;
-		}
-
-		@Override
-		public List<String> findAllNames() {
-			return players.stream().map(Player::name).toList();
-		}
-
-		@Override
-		public List<Player> findByNames(List<String> names) {
-			return players.stream().filter(player -> names.contains(player.name())).toList();
-		}
-	}
 }

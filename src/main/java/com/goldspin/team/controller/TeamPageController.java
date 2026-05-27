@@ -1,11 +1,8 @@
 package com.goldspin.team.controller;
 
-import com.goldspin.team.domain.Player;
-import com.goldspin.team.domain.TeamGroup;
-import com.goldspin.team.repository.PlayerWhitelistRepository;
-import com.goldspin.team.service.TeamBalancerService;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +10,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.goldspin.team.domain.Player;
+import com.goldspin.team.domain.TeamGroup;
+import com.goldspin.team.repository.PlayerWhitelistRepository;
+import com.goldspin.team.service.TeamBalancerService;
+import com.goldspin.team.service.TeamBalancerService.PlayerPair;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @Slf4j
@@ -26,23 +27,17 @@ public class TeamPageController {
 	private static final String WHITELIST_ERROR_MESSAGE = "화이트리스트에 없는 인원이 포함되어 있습니다.";
 	private static final Pattern TAGIFY_VALUE_PATTERN = Pattern.compile("\"value\"\\s*:\\s*\"([^\"]+)\"");
 	private static final String DEFAULT_SELECTED_NAMES = String.join(",",
-			"지청일",
-			"김재균",
-			"전성호",
-			"박종백",
-			"김광덕",
-			"임웅성",
-			"이영주",
+			"신만용", "엄기성",
+			"최성운", "정원준",
+			"강민승", "김은숙",
+			"홍지용", "신선숙",
+			"전성호", "함소희",
+			"박종백", "이미경",
 			"송영신",
-			"권정택",
-			"홍지용",
-			"신선숙",
-			"정원준",
-			"이승학",
-			"임금옥",
-			"신만용",
-			"안성민",
-			"강민승");
+			"황태규", "임금옥",
+			"이승학", "이희진",
+			"지해준", "안영희",
+			"고성기", "이영주", "이동혁");
 
 	private final PlayerWhitelistRepository whitelistRepository;
 	private final TeamBalancerService teamBalancerService;
@@ -74,11 +69,28 @@ public class TeamPageController {
 		}
 
 		try {
-			List<TeamGroup> groups = teamBalancerService.createBalancedTeams(selectedPlayersResult.players(), groupCount);
+			List<TeamGroup> groups = teamBalancerService.createBalancedTeams(selectedPlayersResult.players(),
+					groupCount);
 			model.addAttribute("groups", groups);
 		} catch (IllegalArgumentException e) {
 			model.addAttribute(ERROR_MESSAGE_ATTRIBUTE, e.getMessage());
 		}
+		return INDEX_VIEW;
+	}
+
+	/*
+	 * 복식
+	 */
+	@PostMapping("/partners")
+	public String partners(@RequestParam(name = "selectedNames", required = false) String selectedNames,
+			Model model) {
+		addBaseModelAttributes(model, selectedNames == null ? "" : selectedNames, 0);
+		List<String> requestedNames = parseSelectedNames(selectedNames);
+		List<Player> selectedPlayers = whitelistRepository.findByNames(requestedNames);
+		List<PlayerPair> pairs = teamBalancerService.createPartners(selectedPlayers);
+
+		model.addAttribute("partners", pairs);
+
 		return INDEX_VIEW;
 	}
 
@@ -89,10 +101,6 @@ public class TeamPageController {
 		addBaseModelAttributes(model, selectedNames == null ? "" : selectedNames, 2);
 
 		SelectedPlayersResult selectedPlayersResult = resolveSelectedPlayers(selectedNames);
-		if (selectedPlayersResult.hasUnknownPlayers()) {
-			model.addAttribute(ERROR_MESSAGE_ATTRIBUTE, WHITELIST_ERROR_MESSAGE);
-			return INDEX_VIEW;
-		}
 
 		model.addAttribute("printPlayers", selectedPlayersResult.players());
 		return PRINT_VIEW;
@@ -140,4 +148,5 @@ public class TeamPageController {
 
 	private record SelectedPlayersResult(List<Player> players, boolean hasUnknownPlayers) {
 	}
+
 }
